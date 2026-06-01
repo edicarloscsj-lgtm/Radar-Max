@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Biblioteca para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -21,16 +24,14 @@
     </script>
     <style>
         body { background-color: #f8fafc; }
-        .table-row-hover:hover { background-color: #f1f5f9; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .hide-print { display: block; }
     </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Navbar Interna -->
     <nav class="bg-gray-900 text-white shadow-lg border-b border-gray-800 sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -38,252 +39,310 @@
                     <div class="bg-gradient-to-br from-brand-400 to-brand-600 p-2 rounded-lg">
                         <i class="ph ph-radar text-2xl text-white"></i>
                     </div>
-                    <span class="text-xl font-bold tracking-tight">Mapamax<span class="font-light text-brand-400">Radar</span></span>
-                    <span class="hidden md:inline-block ml-4 bg-gray-800 text-xs text-gray-300 px-3 py-1 rounded-full border border-gray-700 font-medium">Uso Interno</span>
+                    <span class="text-xl font-bold tracking-tight">Mapamax<span class="font-light text-brand-400">CRM</span></span>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <!-- ========================================== -->
+    <!-- TELA 1: O RADAR (BUSCA)                    -->
+    <!-- ========================================== -->
+    <main id="view-radar" class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         
-        <!-- Header & Search -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-brand-50 rounded-full mix-blend-multiply filter blur-3xl opacity-50 transform translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Mapeamento de Território</h1>
+            <p class="text-gray-500 mb-6 font-medium">Busque por Nicho + Cidade. O sistema destacará empresas precisando de ajuda urgente.</p>
             
-            <h1 class="text-2xl font-extrabold text-gray-900 mb-2 relative z-10">Mapeamento de Território</h1>
-            <p class="text-gray-500 mb-6 relative z-10 font-medium">Busque por Nicho + Cidade. O sistema destacará empresas precisando de ajuda urgente.</p>
-            
-            <div class="flex flex-col md:flex-row gap-4 relative z-10">
+            <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1 relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="ph ph-magnifying-glass text-xl text-gray-400 group-focus-within:text-brand-500 transition-colors"></i>
+                        <i class="ph ph-magnifying-glass text-xl text-gray-400"></i>
                     </div>
-                    <input type="text" id="search-query" placeholder="Ex: Clínicas Odontológicas em Lauro de Freitas, BA" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-4 text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" onkeypress="handleEnter(event)">
+                    <input type="text" id="search-query" placeholder="Ex: Dentistas em Lauro de Freitas, BA" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-sm" onkeypress="handleEnter(event)">
                 </div>
-                <button onclick="buscarLeads()" id="btn-search" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 whitespace-nowrap active:scale-[0.98]">
-                    <i class="ph ph-crosshair text-xl"></i> Escanear Região
+                <button onclick="buscarLeads()" id="btn-search" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+                    <i class="ph ph-crosshair text-xl"></i> Escanear
                 </button>
             </div>
         </div>
 
-        <!-- Estatísticas Rápidas -->
-        <div id="stats-container" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 hidden">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col justify-center">
-                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Encontrado</p>
-                <div class="flex items-end gap-2 mt-1">
-                    <span id="stat-total" class="text-3xl font-black text-gray-900">0</span>
-                </div>
-            </div>
-            <div class="bg-red-50 rounded-xl shadow-sm border border-red-100 p-5 flex flex-col justify-center">
-                <p class="text-sm font-semibold text-red-600 uppercase tracking-wide"><i class="ph ph-warning-circle"></i> Leads Críticos</p>
-                <div class="flex items-end gap-2 mt-1">
-                    <span id="stat-critical" class="text-3xl font-black text-red-700">0</span>
-                    <span class="text-sm text-red-500 mb-1 font-medium">Urgentes</span>
-                </div>
-            </div>
-            <div class="bg-orange-50 rounded-xl shadow-sm border border-orange-100 p-5 flex flex-col justify-center">
-                <p class="text-sm font-semibold text-orange-600 uppercase tracking-wide"><i class="ph ph-warning"></i> Oportunidades</p>
-                <div class="flex items-end gap-2 mt-1">
-                    <span id="stat-attention" class="text-3xl font-black text-orange-700">0</span>
-                    <span class="text-sm text-orange-500 mb-1 font-medium">Morno</span>
-                </div>
-            </div>
-            <div class="bg-green-50 rounded-xl shadow-sm border border-green-100 p-5 flex flex-col justify-center">
-                <p class="text-sm font-semibold text-green-600 uppercase tracking-wide"><i class="ph ph-shield-check"></i> Fortes</p>
-                <div class="flex items-end gap-2 mt-1">
-                    <span id="stat-strong" class="text-3xl font-black text-green-700">0</span>
-                    <span class="text-sm text-green-500 mb-1 font-medium">Não priorizar</span>
-                </div>
+        <!-- Tabela -->
+        <div id="results-container" class="hidden bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase font-bold">
+                            <th class="p-5">Empresa</th>
+                            <th class="p-5 text-center">Google</th>
+                            <th class="p-5">Status</th>
+                            <th class="p-5 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-table-body" class="divide-y divide-gray-100"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Tabela de Resultados -->
-        <div id="results-container" class="hidden">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider font-bold">
-                                <th class="p-5 w-2/5">Empresa & Localização</th>
-                                <th class="p-5 text-center">Métricas no Google</th>
-                                <th class="p-5">Nível de Urgência</th>
-                                <th class="p-5 text-right">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leads-table-body" class="divide-y divide-gray-100">
-                            <!-- JS injeta os dados aqui -->
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Estado de Carregamento -->
+        <div id="loading-state" class="hidden py-10 text-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-4"></div>
+            <span class="text-brand-600 font-bold text-lg">Vasculhando o Google Maps...</span>
+        </div>
+    </main>
+
+
+    <!-- ========================================== -->
+    <!-- TELA 2: VISUALIZAÇÃO E PDF (OCULTA)        -->
+    <!-- ========================================== -->
+    <main id="view-pdf" class="hidden flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Botoes de Acao do PDF -->
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <button onclick="voltarParaRadar()" class="text-gray-500 hover:text-gray-900 flex items-center gap-2 font-bold">
+                <i class="ph ph-arrow-left"></i> Voltar à Lista
+            </button>
+            
+            <div class="flex gap-3">
+                <button onclick="baixarPDF()" id="btn-baixar-pdf" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-bold shadow-md flex items-center gap-2">
+                    <i class="ph ph-download-simple text-lg"></i> Baixar PDF
+                </button>
+                <button onclick="enviarWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md shadow-green-600/30 flex items-center gap-2">
+                    <i class="ph ph-whatsapp-logo text-lg"></i> Enviar WhatsApp
+                </button>
             </div>
         </div>
 
-        <!-- Esqueleto de Carregamento -->
-        <div id="loading-state" class="hidden">
-            <div class="flex justify-center items-center py-10 mb-4">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mr-3"></div>
-                <span class="text-brand-600 font-bold text-lg">Puxando dados do Google Places...</span>
+        <!-- CONTEUDO DO PDF (Será exportado) -->
+        <div id="report-container" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
+            <div class="bg-gray-900 text-white p-8 md:p-10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500 rounded-full mix-blend-multiply opacity-20 transform translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <p class="text-brand-400 font-semibold uppercase tracking-wider text-sm mb-1">Auditoria de SEO Local</p>
+                        <h2 id="pdf-nome" class="text-3xl font-bold mb-2">Nome da Empresa</h2>
+                        <p class="text-gray-400 text-sm"><i class="ph ph-map-pin"></i> <span id="pdf-endereco">Endereço</span></p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-5xl font-black text-white" id="pdf-score">00<span class="text-xl text-gray-400 font-normal">/100</span></div>
+                        <p id="pdf-badge" class="font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block">Status</p>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm p-4">
-                <div class="animate-pulse space-y-4">
-                    <div class="h-12 bg-gray-100 rounded"></div>
-                    <div class="h-12 bg-gray-100 rounded"></div>
-                    <div class="h-12 bg-gray-100 rounded"></div>
+
+            <div class="p-8 md:p-10">
+                <p class="text-gray-600 leading-relaxed mb-8 text-lg">
+                    Avaliamos a presença da sua empresa no Google Maps. Atualmente, seu negócio está <strong>perdendo oportunidades de venda</strong> devido ao seu posicionamento comparado aos concorrentes da região.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Nota Pública</div>
+                        <div class="text-4xl font-black text-gray-900 flex items-center gap-2">
+                            <span id="pdf-nota-real">0.0</span> <i class="ph ph-star-fill text-yellow-400 text-2xl"></i>
+                        </div>
+                        <p class="text-sm text-red-600 mt-2 font-medium" id="pdf-alerta-nota">Abaixo do recomendado (4.5)</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Volume de Avaliações</div>
+                        <div class="text-4xl font-black text-gray-900 flex items-center gap-2">
+                            <span id="pdf-avaliacoes-real">0</span> <i class="ph ph-users text-brand-500 text-2xl"></i>
+                        </div>
+                        <p class="text-sm text-red-600 mt-2 font-medium" id="pdf-alerta-avaliacoes">Baixa autoridade no bairro</p>
+                    </div>
+                </div>
+
+                <div class="bg-brand-50 p-6 rounded-xl border border-brand-100 text-center">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">A Mapamax tem a Solução</h3>
+                    <p class="text-gray-700 text-sm mb-4">
+                        Nossa tecnologia automatiza a captação de avaliações 5 estrelas dos seus clientes atuais, blindando sua reputação e colocando sua empresa no topo das buscas do Google.
+                    </p>
+                    <div class="inline-block bg-white border border-gray-200 text-gray-800 px-6 py-2 rounded-lg font-bold text-sm">
+                        Responda nossa mensagem para uma consultoria gratuita.
+                    </div>
                 </div>
             </div>
         </div>
-
     </main>
 
     <script>
         // =========================================================================
-        // COLOQUE AQUI A URL GERADA PELO SEU SEGUNDO APPSCRIPT (O Buscador)
+        // COLOQUE AQUI A URL DO SEU APPSCRIPT (A que gerou no Passo 1)
         // =========================================================================
-        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbx1T3G_8BUgvbd6UPLaAr45dW9tp1u2oa6fJkBqa5pbOMtG-cFnPlGaYhxfCyK42t3n/exec";
+        const APPSCRIPT_URL = "SUA_URL_DO_APPSCRIPT_AQUI";
 
-        function handleEnter(e) {
-            if (e.key === 'Enter') buscarLeads();
-        }
+        // Variável global para armazenar os dados do lead atual para o WhatsApp
+        let leadAtual = null; 
+
+        function handleEnter(e) { if (e.key === 'Enter') buscarLeads(); }
 
         async function buscarLeads() {
             const query = document.getElementById('search-query').value.trim();
-            if (!query) {
-                alert("Por favor, digite o nicho e a cidade. Ex: Pizzarias em Salvador.");
-                return;
-            }
+            if (!query) { alert("Digite o nicho e cidade."); return; }
+            if (APPSCRIPT_URL === "vhttps://script.google.com/macros/s/AKfycbx1T3G_8BUgvbd6UPLaAr45dW9tp1u2oa6fJkBqa5pbOMtG-cFnPlGaYhxfCyK42t3n/exec") { alert("Cole sua URL na linha 237 do código!"); return; }
 
-            if(APPSCRIPT_URL === "SUA_URL_DO_APPSCRIPT_AQUI") {
-                alert("⚠️ AVISO: Cole a URL do seu AppScript na linha 152 do código.");
-                return;
-            }
-
-            // UI de carregamento
             document.getElementById('results-container').classList.add('hidden');
-            document.getElementById('stats-container').classList.add('hidden');
             document.getElementById('loading-state').classList.remove('hidden');
             
-            const btn = document.getElementById('btn-search');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Varrendo...';
-
             try {
-                // Chama o AppScript que por sua vez chama o Google Places
-                const response = await fetch(`${APPSCRIPT_URL}?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
-
-                if (data.status === "success") {
-                    renderizarTabelaEEstatisticas(data.resultados);
-                } else {
-                    alert("Erro na busca: " + data.message);
-                    resetUI();
+                // Chama a função doGet (Action: search)
+                const response = await fetch(`${APPSCRIPT_URL}?action=search&query=${encodeURIComponent(query)}`);
+                const textResponse = await response.text(); // Pega o texto puro para depurar
+                
+                try {
+                    const data = JSON.parse(textResponse);
+                    if (data.status === "success") {
+                        renderizarTabela(data.resultados);
+                    } else {
+                        alert("Erro da API: " + data.message);
+                    }
+                } catch (parseError) {
+                    // Se não for JSON, mostra o que o Google respondeu
+                    console.error("Resposta do Google:", textResponse);
+                    alert("O Google bloqueou o acesso.\n\nVerifique se a URL termina com '/exec' e se está 'Qualquer Pessoa' (Não pode ser 'Qualquer pessoa com conta').\n\nAperte F12 e olhe a aba Console para ver a resposta.");
                 }
-
             } catch (error) {
-                alert("Falha de conexão. Verifique se o AppScript foi implantado como 'Qualquer Pessoa'.");
-                console.error(error);
-                resetUI();
+                alert("Ocorreu um erro de rede: " + error.message);
+            } finally {
+                document.getElementById('loading-state').classList.add('hidden');
             }
         }
 
-        function renderizarTabelaEEstatisticas(leads) {
+        function renderizarTabela(leads) {
             const tbody = document.getElementById('leads-table-body');
             tbody.innerHTML = '';
-            
-            let countCritical = 0, countAttention = 0, countStrong = 0;
 
             if (leads.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 font-medium">Nenhuma empresa encontrada para este termo.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500">Nenhuma empresa encontrada.</td></tr>`;
             } else {
                 leads.forEach(lead => {
-                    // Contagem estatísticas
-                    if (lead.status_prospeccao.cor === "red") countCritical++;
-                    else if (lead.status_prospeccao.cor === "orange") countAttention++;
-                    else countStrong++;
-
-                    // Visual das Tags
-                    let badgeBg, badgeText, badgeBorder, icone;
-                    if (lead.status_prospeccao.cor === "red") {
-                        badgeBg = "bg-red-50"; badgeText = "text-red-700"; badgeBorder = "border-red-200"; icone = "ph-warning-circle text-red-500";
-                    } else if (lead.status_prospeccao.cor === "orange") {
-                        badgeBg = "bg-orange-50"; badgeText = "text-orange-700"; badgeBorder = "border-orange-200"; icone = "ph-warning text-orange-500";
-                    } else {
-                        badgeBg = "bg-green-50"; badgeText = "text-green-700"; badgeBorder = "border-green-200"; icone = "ph-check-circle text-green-500";
+                    // Cálculo Lógico Mapamax
+                    let cor = "bg-green-50 text-green-700 border-green-200";
+                    let motivo = "Forte";
+                    
+                    if (lead.nota === 0 || lead.avaliacoes < 20 || lead.nota < 4.0) {
+                        cor = "bg-red-50 text-red-700 border-red-200";
+                        motivo = "Crítico";
+                    } else if (lead.avaliacoes >= 20 && lead.avaliacoes < 50) {
+                        cor = "bg-orange-50 text-orange-700 border-orange-200";
+                        motivo = "Atenção";
                     }
 
-                    // Verifica se a nota é 0 (Significa sem avaliações)
-                    const notaValor = lead.nota > 0 ? lead.nota.toFixed(1) : 'S/N';
-                    const notaCor = (lead.nota < 4.0 || lead.nota === 0) ? 'text-red-600 font-bold' : 'text-gray-900 font-bold';
-                    const avalCor = lead.avaliacoes < 30 ? 'text-red-600 font-bold' : 'text-gray-900 font-bold';
+                    const linkMaps = `https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${lead.place_id}`;
 
                     const tr = document.createElement('tr');
-                    tr.className = 'table-row-hover transition-colors border-b border-gray-50';
+                    tr.className = 'hover:bg-gray-50 border-b border-gray-50 transition-colors';
                     tr.innerHTML = `
                         <td class="p-5">
-                            <div class="font-bold text-gray-900 text-base mb-1">${lead.nome}</div>
-                            <div class="text-xs text-gray-500 flex items-start gap-1 max-w-xs" title="${lead.endereco}">
-                                <i class="ph ph-map-pin mt-0.5"></i>
-                                <span class="line-clamp-2">${lead.endereco}</span>
-                            </div>
+                            <div class="font-bold text-gray-900">${lead.nome}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-[250px]">${lead.endereco}</div>
+                            <a href="${linkMaps}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-flex items-center gap-1"><i class="ph ph-arrow-square-out"></i> Abrir no Maps</a>
+                        </td>
+                        <td class="p-5 text-center">
+                            <div class="font-bold ${lead.nota < 4 ? 'text-red-600' : 'text-gray-900'}">${lead.nota > 0 ? lead.nota : 'N/A'} <i class="ph ph-star-fill text-yellow-400 text-xs"></i></div>
+                            <div class="text-xs text-gray-500">${lead.avaliacoes} reviews</div>
                         </td>
                         <td class="p-5">
-                            <div class="flex items-center justify-center gap-4">
-                                <div class="text-center">
-                                    <div class="${notaCor} text-lg flex items-center justify-center gap-1">
-                                        ${notaValor} <i class="ph ph-star-fill text-yellow-400 text-sm"></i>
-                                    </div>
-                                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-1">Nota</div>
-                                </div>
-                                <div class="w-px h-8 bg-gray-200"></div>
-                                <div class="text-center">
-                                    <div class="${avalCor} text-lg">${lead.avaliacoes}</div>
-                                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-1">Reviews</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-5">
-                            <div class="inline-flex items-center gap-2 ${badgeBg} ${badgeText} px-3 py-2 rounded-lg text-sm font-semibold border ${badgeBorder}">
-                                <i class="ph ${icone} text-lg"></i> ${lead.status_prospeccao.motivo}
-                            </div>
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold border ${cor}">${motivo}</span>
                         </td>
                         <td class="p-5 text-right">
-                            <button onclick="copiarEIrParaAuditoria('${lead.nome}')" class="bg-white hover:bg-brand-50 border border-gray-300 hover:border-brand-300 text-gray-800 hover:text-brand-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center gap-2 ml-auto">
-                                <i class="ph ph-file-pdf text-lg"></i> Preparar PDF
+                            <button onclick="prepararRelatorio('${lead.nome.replace(/'/g, "\\'")}', '${lead.endereco.replace(/'/g, "\\'")}', ${lead.nota}, ${lead.avaliacoes})" class="bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                                Gerar Proposta
                             </button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
-
-            // Atualiza Dashboard
-            document.getElementById('stat-total').innerText = leads.length;
-            document.getElementById('stat-critical').innerText = countCritical;
-            document.getElementById('stat-attention').innerText = countAttention;
-            document.getElementById('stat-strong').innerText = countStrong;
-
-            // Troca de Telas
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('stats-container').classList.remove('hidden');
             document.getElementById('results-container').classList.remove('hidden');
-            resetUI();
         }
 
-        function resetUI() {
-            const btn = document.getElementById('btn-search');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="ph ph-crosshair text-xl"></i> Escanear Região';
+        async function prepararRelatorio(nome, endereco, nota, avaliacoes) {
+            // 1. Salva os dados na memória para usar no WhatsApp
+            leadAtual = { nome, nota, avaliacoes };
+
+            // 2. Calcula um Score Mapamax Baseado nos dados
+            let score = 95;
+            if (nota < 4.5) score -= 20;
+            if (avaliacoes < 50) score -= 15;
+            if (avaliacoes < 20) score -= 20;
+            if (nota === 0) score = 30; // Sem avaliações
+            
+            // 3. Preenche o Layout do PDF
+            document.getElementById('pdf-nome').innerText = nome;
+            document.getElementById('pdf-endereco').innerText = endereco;
+            document.getElementById('pdf-score').innerHTML = `${score}<span class="text-xl text-gray-400 font-normal">/100</span>`;
+            document.getElementById('pdf-nota-real').innerText = nota > 0 ? nota.toFixed(1) : '0.0';
+            document.getElementById('pdf-avaliacoes-real').innerText = avaliacoes;
+
+            const badge = document.getElementById('pdf-badge');
+            if(score < 60) {
+                badge.className = "font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block bg-red-500/20 text-red-400 border border-red-500/30";
+                badge.innerText = "Estado Crítico";
+            } else {
+                badge.className = "font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block bg-orange-500/20 text-orange-400 border border-orange-500/30";
+                badge.innerText = "Atenção Necessária";
+            }
+
+            // 4. Troca de Tela
+            document.getElementById('view-radar').classList.add('hidden');
+            document.getElementById('view-pdf').classList.remove('hidden');
+            window.scrollTo(0, 0);
+
+            // 5. SALVA NA PLANILHA SILENCIOSAMENTE EM BACKGROUND (Chama o doPost)
+            try {
+                await fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ nome: nome, endereco: endereco, nota: nota, avaliacoes: avaliacoes })
+                });
+                console.log("Salvo na planilha com sucesso!");
+            } catch (e) {
+                console.error("Erro ao salvar na planilha", e);
+            }
         }
 
-        function copiarEIrParaAuditoria(nomeEmpresa) {
-            // Apenas copia o nome para a área de transferência e abre o gerador
-            navigator.clipboard.writeText(nomeEmpresa).then(() => {
-                alert(`🎯 O nome "${nomeEmpresa}" foi copiado!\n\nEstou abrindo o seu Gerador de PDF. Basta colar o nome lá e emitir o relatório.`);
-                window.open('auditoria.html', '_blank'); 
-            }).catch(err => {
-                alert("Estou abrindo o Gerador. Digite lá: " + nomeEmpresa);
-                window.open('auditoria.html', '_blank');
+        function voltarParaRadar() {
+            document.getElementById('view-pdf').classList.add('hidden');
+            document.getElementById('view-radar').classList.remove('hidden');
+        }
+
+        function baixarPDF() {
+            const element = document.getElementById('report-container');
+            const btn = document.getElementById('btn-baixar-pdf');
+            const txtOriginal = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Gerando...';
+            btn.disabled = true;
+
+            const opt = {
+                margin:       0,
+                filename:     `Auditoria-${leadAtual.nome}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
             });
+        }
+
+        function enviarWhatsApp() {
+            // Pede o número do cliente
+            const numeroBruto = prompt("Digite o número do WhatsApp da empresa (Apenas números, com DDD):\nEx: 71999998888");
+            
+            if (numeroBruto) {
+                const numeroLimpo = numeroBruto.replace(/\D/g, ''); // Remove espaços e traços
+                
+                // Monta a mensagem persuasiva
+                const mensagem = `Olá, somos da Mapamax! 👋\n\nFizemos uma auditoria na presença digital da *${leadAtual.nome}* no Google Maps.\n\nNotamos que a empresa tem ${leadAtual.avaliacoes} avaliações e nota ${leadAtual.nota} ⭐️. Isso está fazendo vocês perderem clientes para a concorrência.\n\nGerei um relatório em PDF mostrando o problema. Posso te enviar por aqui?`;
+                
+                // Abre o WhatsApp Web / App
+                const urlWa = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+                window.open(urlWa, '_blank');
+            }
         }
     </script>
 </body>
