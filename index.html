@@ -3,79 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar Mapamax | Prospecção Ativa</title>
+    <title>Radar Mapamax | Prospecção</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Biblioteca para gerar PDF -->
+    <!-- html2pdf para gerar o relatório -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script>
         tailwind.config = {
             theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: { 50: '#f0fdfa', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a' }
-                    }
-                }
+                extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a' } } }
             }
         }
     </script>
-    <style>
-        body { background-color: #f8fafc; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .hide-print { display: block; }
-    </style>
+    <style>body { background-color: #f8fafc; }</style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
+    <!-- Navbar -->
     <nav class="bg-gray-900 text-white shadow-lg border-b border-gray-800 sticky top-0 z-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-br from-brand-400 to-brand-600 p-2 rounded-lg">
-                        <i class="ph ph-radar text-2xl text-white"></i>
-                    </div>
-                    <span class="text-xl font-bold tracking-tight">Mapamax<span class="font-light text-brand-400">CRM</span></span>
-                </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-3">
+            <div class="bg-gradient-to-br from-brand-500 to-brand-600 p-2 rounded-lg">
+                <i class="ph ph-radar text-2xl text-white"></i>
             </div>
+            <span class="text-xl font-bold tracking-tight">Mapamax<span class="font-light text-brand-400">CRM</span></span>
         </div>
     </nav>
 
-    <!-- ========================================== -->
-    <!-- TELA 1: O RADAR (BUSCA)                    -->
-    <!-- ========================================== -->
-    <main id="view-radar" class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        
+    <!-- TELA 1: BUSCA -->
+    <main id="view-radar" class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Mapeamento de Território</h1>
-            <p class="text-gray-500 mb-6 font-medium">Busque por Nicho + Cidade. O sistema destacará empresas precisando de ajuda urgente.</p>
+            <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Máquina de Prospecção</h1>
+            <p class="text-gray-500 mb-6 font-medium">Busque por Nicho + Cidade para encontrar empresas precisando de ajuda.</p>
             
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1 relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <i class="ph ph-magnifying-glass text-xl text-gray-400"></i>
                     </div>
-                    <input type="text" id="search-query" placeholder="Ex: Dentistas em Lauro de Freitas, BA" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-sm" onkeypress="handleEnter(event)">
+                    <input type="text" id="search-query" placeholder="Ex: Dentistas em Lauro de Freitas" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-brand-500 focus:outline-none" onkeypress="handleEnter(event)">
                 </div>
-                <button onclick="buscarLeads()" id="btn-search" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+                <button onclick="buscarLeads()" id="btn-search" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">
                     <i class="ph ph-crosshair text-xl"></i> Escanear
                 </button>
             </div>
         </div>
 
-        <!-- Tabela -->
+        <div id="loading-state" class="hidden py-10 text-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-4"></div>
+            <span class="text-brand-600 font-bold text-lg">Buscando empresas no Google...</span>
+        </div>
+
         <div id="results-container" class="hidden bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase font-bold">
                             <th class="p-5">Empresa</th>
-                            <th class="p-5 text-center">Google</th>
-                            <th class="p-5">Status</th>
+                            <th class="p-5 text-center">Avaliações</th>
+                            <th class="p-5">Situação</th>
                             <th class="p-5 text-right">Ação</th>
                         </tr>
                     </thead>
@@ -83,84 +70,62 @@
                 </table>
             </div>
         </div>
-
-        <!-- Estado de Carregamento -->
-        <div id="loading-state" class="hidden py-10 text-center">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-4"></div>
-            <span class="text-brand-600 font-bold text-lg">Vasculhando o Google Maps...</span>
-        </div>
     </main>
 
-
-    <!-- ========================================== -->
-    <!-- TELA 2: VISUALIZAÇÃO E PDF (OCULTA)        -->
-    <!-- ========================================== -->
-    <main id="view-pdf" class="hidden flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- Botoes de Acao do PDF -->
+    <!-- TELA 2: PDF E WHATSAPP -->
+    <main id="view-pdf" class="hidden flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
             <button onclick="voltarParaRadar()" class="text-gray-500 hover:text-gray-900 flex items-center gap-2 font-bold">
                 <i class="ph ph-arrow-left"></i> Voltar à Lista
             </button>
-            
             <div class="flex gap-3">
-                <button onclick="baixarPDF()" id="btn-baixar-pdf" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-bold shadow-md flex items-center gap-2">
+                <button onclick="baixarPDF()" id="btn-baixar-pdf" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2">
                     <i class="ph ph-download-simple text-lg"></i> Baixar PDF
                 </button>
-                <button onclick="enviarWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md shadow-green-600/30 flex items-center gap-2">
+                <button onclick="enviarWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2">
                     <i class="ph ph-whatsapp-logo text-lg"></i> Enviar WhatsApp
                 </button>
             </div>
         </div>
 
-        <!-- CONTEUDO DO PDF (Será exportado) -->
-        <div id="report-container" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
-            <div class="bg-gray-900 text-white p-8 md:p-10 relative overflow-hidden">
+        <!-- RELATÓRIO PDF -->
+        <div id="report-container" class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div class="bg-gray-900 text-white p-10 relative">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500 rounded-full mix-blend-multiply opacity-20 transform translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
                 <div class="relative z-10 flex justify-between items-start">
                     <div>
                         <p class="text-brand-400 font-semibold uppercase tracking-wider text-sm mb-1">Auditoria de SEO Local</p>
-                        <h2 id="pdf-nome" class="text-3xl font-bold mb-2">Nome da Empresa</h2>
+                        <h2 id="pdf-nome" class="text-3xl font-bold mb-2">Nome Empresa</h2>
                         <p class="text-gray-400 text-sm"><i class="ph ph-map-pin"></i> <span id="pdf-endereco">Endereço</span></p>
                     </div>
                     <div class="text-right">
                         <div class="text-5xl font-black text-white" id="pdf-score">00<span class="text-xl text-gray-400 font-normal">/100</span></div>
-                        <p id="pdf-badge" class="font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block">Status</p>
+                        <p id="pdf-badge" class="font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block">Atenção</p>
                     </div>
                 </div>
             </div>
 
-            <div class="p-8 md:p-10">
-                <p class="text-gray-600 leading-relaxed mb-8 text-lg">
-                    Avaliamos a presença da sua empresa no Google Maps. Atualmente, seu negócio está <strong>perdendo oportunidades de venda</strong> devido ao seu posicionamento comparado aos concorrentes da região.
-                </p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div class="p-10">
+                <p class="text-gray-600 leading-relaxed mb-8 text-lg">Avaliamos a presença da sua empresa no Google Maps. Atualmente, seu negócio está <strong>perdendo oportunidades de venda</strong> devido ao posicionamento comparado aos concorrentes.</p>
+                
+                <div class="grid grid-cols-2 gap-6 mb-10">
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <div class="text-gray-500 text-sm font-bold uppercase mb-1">Nota Pública</div>
                         <div class="text-4xl font-black text-gray-900 flex items-center gap-2">
                             <span id="pdf-nota-real">0.0</span> <i class="ph ph-star-fill text-yellow-400 text-2xl"></i>
                         </div>
-                        <p class="text-sm text-red-600 mt-2 font-medium" id="pdf-alerta-nota">Abaixo do recomendado (4.5)</p>
                     </div>
-
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Volume de Avaliações</div>
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Avaliações</div>
                         <div class="text-4xl font-black text-gray-900 flex items-center gap-2">
                             <span id="pdf-avaliacoes-real">0</span> <i class="ph ph-users text-brand-500 text-2xl"></i>
                         </div>
-                        <p class="text-sm text-red-600 mt-2 font-medium" id="pdf-alerta-avaliacoes">Baixa autoridade no bairro</p>
                     </div>
                 </div>
 
                 <div class="bg-brand-50 p-6 rounded-xl border border-brand-100 text-center">
                     <h3 class="text-xl font-bold text-gray-900 mb-2">A Mapamax tem a Solução</h3>
-                    <p class="text-gray-700 text-sm mb-4">
-                        Nossa tecnologia automatiza a captação de avaliações 5 estrelas dos seus clientes atuais, blindando sua reputação e colocando sua empresa no topo das buscas do Google.
-                    </p>
-                    <div class="inline-block bg-white border border-gray-200 text-gray-800 px-6 py-2 rounded-lg font-bold text-sm">
-                        Responda nossa mensagem para uma consultoria gratuita.
-                    </div>
+                    <p class="text-gray-700 text-sm mb-4">Multiplicamos suas avaliações 5 estrelas para colocar sua empresa no topo do Google.</p>
                 </div>
             </div>
         </div>
@@ -168,44 +133,44 @@
 
     <script>
         // =========================================================================
-        // COLOQUE AQUI A URL DO SEU APPSCRIPT (A que gerou no Passo 1)
+        // PASSO 2: COLOQUE A URL DO SEU APPSCRIPT ABAIXO (A que termina em /exec)
         // =========================================================================
-        const APPSCRIPT_URL = "SUA_URL_DO_APPSCRIPT_AQUI";
-
-        // Variável global para armazenar os dados do lead atual para o WhatsApp
-        let leadAtual = null; 
+        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbyehq8bso--KsFnoudKZy7ZFyUZVlSL9Q-QfbiD_EDK1mV9oVfQWEwkVRIc1kik968/exec";
+        
+        let leadAtual = null;
 
         function handleEnter(e) { if (e.key === 'Enter') buscarLeads(); }
 
         async function buscarLeads() {
             const query = document.getElementById('search-query').value.trim();
-            if (!query) { alert("Digite o nicho e cidade."); return; }
-            if (APPSCRIPT_URL === "vhttps://script.google.com/macros/s/AKfycbx1T3G_8BUgvbd6UPLaAr45dW9tp1u2oa6fJkBqa5pbOMtG-cFnPlGaYhxfCyK42t3n/exec") { alert("Cole sua URL na linha 237 do código!"); return; }
+            if (!query) { alert("Digite algo para buscar."); return; }
+            if (APPSCRIPT_URL === "https://script.google.com/macros/s/AKfycbyehq8bso--KsFnoudKZy7ZFyUZVlSL9Q-QfbiD_EDK1mV9oVfQWEwkVRIc1kik968/exec") { alert("Cole sua URL na linha 144 do código HTML!"); return; }
 
             document.getElementById('results-container').classList.add('hidden');
             document.getElementById('loading-state').classList.remove('hidden');
-            
+            document.getElementById('btn-search').disabled = true;
+
             try {
-                // Chama a função doGet (Action: search)
+                // AQUI GARANTIMOS O ?action=search PARA O GET FUNCIONAR
                 const response = await fetch(`${APPSCRIPT_URL}?action=search&query=${encodeURIComponent(query)}`);
-                const textResponse = await response.text(); // Pega o texto puro para depurar
+                const textResponse = await response.text();
                 
                 try {
                     const data = JSON.parse(textResponse);
                     if (data.status === "success") {
                         renderizarTabela(data.resultados);
                     } else {
-                        alert("Erro da API: " + data.message);
+                        alert("Erro do Sistema: " + data.message);
                     }
-                } catch (parseError) {
-                    // Se não for JSON, mostra o que o Google respondeu
-                    console.error("Resposta do Google:", textResponse);
-                    alert("O Google bloqueou o acesso.\n\nVerifique se a URL termina com '/exec' e se está 'Qualquer Pessoa' (Não pode ser 'Qualquer pessoa com conta').\n\nAperte F12 e olhe a aba Console para ver a resposta.");
+                } catch (e) {
+                    console.error("Resposta crua do servidor:", textResponse);
+                    alert("Erro de conexão. Verifique o console (F12) para ver os detalhes do bloqueio.");
                 }
             } catch (error) {
-                alert("Ocorreu um erro de rede: " + error.message);
+                alert("Falha na rede: " + error.message);
             } finally {
                 document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('btn-search').disabled = false;
             }
         }
 
@@ -217,39 +182,26 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500">Nenhuma empresa encontrada.</td></tr>`;
             } else {
                 leads.forEach(lead => {
-                    // Cálculo Lógico Mapamax
                     let cor = "bg-green-50 text-green-700 border-green-200";
                     let motivo = "Forte";
-                    
-                    if (lead.nota === 0 || lead.avaliacoes < 20 || lead.nota < 4.0) {
-                        cor = "bg-red-50 text-red-700 border-red-200";
-                        motivo = "Crítico";
-                    } else if (lead.avaliacoes >= 20 && lead.avaliacoes < 50) {
-                        cor = "bg-orange-50 text-orange-700 border-orange-200";
-                        motivo = "Atenção";
-                    }
-
-                    const linkMaps = `https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${lead.place_id}`;
+                    if (lead.nota < 4.0 || lead.avaliacoes < 20) { cor = "bg-red-50 text-red-700 border-red-200"; motivo = "Crítico"; } 
+                    else if (lead.avaliacoes < 50) { cor = "bg-orange-50 text-orange-700 border-orange-200"; motivo = "Atenção"; }
 
                     const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-gray-50 border-b border-gray-50 transition-colors';
+                    tr.className = 'hover:bg-gray-50 border-b border-gray-100';
                     tr.innerHTML = `
                         <td class="p-5">
                             <div class="font-bold text-gray-900">${lead.nome}</div>
-                            <div class="text-xs text-gray-500 truncate max-w-[250px]">${lead.endereco}</div>
-                            <a href="${linkMaps}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-flex items-center gap-1"><i class="ph ph-arrow-square-out"></i> Abrir no Maps</a>
+                            <div class="text-xs text-gray-500 truncate max-w-xs">${lead.endereco}</div>
+                            <a href="https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${lead.place_id}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-block">📍 Ver Telefone no Maps</a>
                         </td>
                         <td class="p-5 text-center">
-                            <div class="font-bold ${lead.nota < 4 ? 'text-red-600' : 'text-gray-900'}">${lead.nota > 0 ? lead.nota : 'N/A'} <i class="ph ph-star-fill text-yellow-400 text-xs"></i></div>
+                            <div class="font-bold">${lead.nota > 0 ? lead.nota.toFixed(1) : 'S/N'} <i class="ph ph-star-fill text-yellow-400 text-xs"></i></div>
                             <div class="text-xs text-gray-500">${lead.avaliacoes} reviews</div>
                         </td>
-                        <td class="p-5">
-                            <span class="px-3 py-1 rounded-lg text-xs font-bold border ${cor}">${motivo}</span>
-                        </td>
+                        <td class="p-5"><span class="px-3 py-1 rounded-lg text-xs font-bold border ${cor}">${motivo}</span></td>
                         <td class="p-5 text-right">
-                            <button onclick="prepararRelatorio('${lead.nome.replace(/'/g, "\\'")}', '${lead.endereco.replace(/'/g, "\\'")}', ${lead.nota}, ${lead.avaliacoes})" class="bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors">
-                                Gerar Proposta
-                            </button>
+                            <button onclick="prepararRelatorio('${lead.nome.replace(/'/g, "\\'")}', '${lead.endereco.replace(/'/g, "\\'")}', ${lead.nota}, ${lead.avaliacoes})" class="bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg text-sm font-bold transition">Gerar Proposta</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -259,17 +211,16 @@
         }
 
         async function prepararRelatorio(nome, endereco, nota, avaliacoes) {
-            // 1. Salva os dados na memória para usar no WhatsApp
             leadAtual = { nome, nota, avaliacoes };
 
-            // 2. Calcula um Score Mapamax Baseado nos dados
+            // Cálculo do Score
             let score = 95;
             if (nota < 4.5) score -= 20;
             if (avaliacoes < 50) score -= 15;
             if (avaliacoes < 20) score -= 20;
-            if (nota === 0) score = 30; // Sem avaliações
-            
-            // 3. Preenche o Layout do PDF
+            if (nota === 0) score = 30;
+
+            // Preenche PDF
             document.getElementById('pdf-nome').innerText = nome;
             document.getElementById('pdf-endereco').innerText = endereco;
             document.getElementById('pdf-score').innerHTML = `${score}<span class="text-xl text-gray-400 font-normal">/100</span>`;
@@ -277,28 +228,23 @@
             document.getElementById('pdf-avaliacoes-real').innerText = avaliacoes;
 
             const badge = document.getElementById('pdf-badge');
-            if(score < 60) {
-                badge.className = "font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block bg-red-500/20 text-red-400 border border-red-500/30";
-                badge.innerText = "Estado Crítico";
-            } else {
-                badge.className = "font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block bg-orange-500/20 text-orange-400 border border-orange-500/30";
-                badge.innerText = "Atenção Necessária";
-            }
+            badge.className = score < 60 ? "font-bold mt-1 text-sm px-3 py-1 rounded-full bg-red-500/20 text-red-400" : "font-bold mt-1 text-sm px-3 py-1 rounded-full bg-orange-500/20 text-orange-400";
+            badge.innerText = score < 60 ? "Estado Crítico" : "Atenção Necessária";
 
-            // 4. Troca de Tela
+            // Troca de tela
             document.getElementById('view-radar').classList.add('hidden');
             document.getElementById('view-pdf').classList.remove('hidden');
             window.scrollTo(0, 0);
 
-            // 5. SALVA NA PLANILHA SILENCIOSAMENTE EM BACKGROUND (Chama o doPost)
+            // SALVA NA PLANILHA (POST)
             try {
                 await fetch(APPSCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ nome: nome, endereco: endereco, nota: nota, avaliacoes: avaliacoes })
+                    body: JSON.stringify({ nome, endereco, nota, avaliacoes })
                 });
-                console.log("Salvo na planilha com sucesso!");
+                console.log("Salvo na planilha!");
             } catch (e) {
-                console.error("Erro ao salvar na planilha", e);
+                console.error("Erro ao salvar", e);
             }
         }
 
@@ -309,39 +255,16 @@
 
         function baixarPDF() {
             const element = document.getElementById('report-container');
-            const btn = document.getElementById('btn-baixar-pdf');
-            const txtOriginal = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Gerando...';
-            btn.disabled = true;
-
-            const opt = {
-                margin:       0,
-                filename:     `Auditoria-${leadAtual.nome}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-            });
+            const opt = { margin: 0, filename: `Auditoria-${leadAtual.nome}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save();
         }
 
         function enviarWhatsApp() {
-            // Pede o número do cliente
-            const numeroBruto = prompt("Digite o número do WhatsApp da empresa (Apenas números, com DDD):\nEx: 71999998888");
-            
-            if (numeroBruto) {
-                const numeroLimpo = numeroBruto.replace(/\D/g, ''); // Remove espaços e traços
-                
-                // Monta a mensagem persuasiva
-                const mensagem = `Olá, somos da Mapamax! 👋\n\nFizemos uma auditoria na presença digital da *${leadAtual.nome}* no Google Maps.\n\nNotamos que a empresa tem ${leadAtual.avaliacoes} avaliações e nota ${leadAtual.nota} ⭐️. Isso está fazendo vocês perderem clientes para a concorrência.\n\nGerei um relatório em PDF mostrando o problema. Posso te enviar por aqui?`;
-                
-                // Abre o WhatsApp Web / App
-                const urlWa = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
-                window.open(urlWa, '_blank');
+            const num = prompt("Digite o WhatsApp da empresa (Apenas números com DDD):");
+            if (num) {
+                const numLimpo = num.replace(/\D/g, '');
+                const msg = `Olá, somos da Mapamax! 👋\n\nFizemos uma auditoria na ${leadAtual.nome}.\n\nCom apenas ${leadAtual.avaliacoes} avaliações e nota ${leadAtual.nota} ⭐️, vocês estão perdendo clientes para a concorrência.\n\nGerei um relatório em PDF mostrando o problema. Posso te enviar?`;
+                window.open(`https://wa.me/55${numLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
             }
         }
     </script>
