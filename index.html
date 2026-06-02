@@ -73,59 +73,113 @@
     </main>
 
     <!-- TELA 2: PDF E WHATSAPP -->
-    <main id="view-pdf" class="hidden flex-grow max-w-4xl mx-auto w-full px-4 py-8">
-        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-            <button onclick="voltarParaRadar()" class="text-gray-500 hover:text-gray-900 flex items-center gap-2 font-bold">
-                <i class="ph ph-arrow-left"></i> Voltar à Lista
+    <main id="view-pdf" class="hidden flex-grow max-w-5xl mx-auto w-full px-4 py-8">
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4 no-print">
+            <button onclick="voltarParaRadar()" class="text-gray-500 hover:text-gray-900 flex items-center gap-2 font-bold transition-colors">
+                <i class="ph ph-arrow-left text-xl"></i> Voltar à Lista
             </button>
             <div class="flex gap-3">
-                <button onclick="baixarPDF()" id="btn-baixar-pdf" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2">
-                    <i class="ph ph-download-simple text-lg"></i> Baixar PDF
+                <button onclick="baixarPDF()" id="btn-baixar-pdf" class="bg-gray-900 hover:bg-black text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md">
+                    <i class="ph ph-download-simple text-xl"></i> Baixar PDF
                 </button>
-                <button onclick="enviarWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2">
-                    <i class="ph ph-whatsapp-logo text-lg"></i> Enviar WhatsApp
+                <button onclick="enviarWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md shadow-green-600/30">
+                    <i class="ph ph-whatsapp-logo text-xl"></i> Enviar WhatsApp
                 </button>
             </div>
         </div>
 
-        <!-- RELATÓRIO PDF -->
-        <div id="report-container" class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div class="bg-gray-900 text-white p-10 relative">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500 rounded-full mix-blend-multiply opacity-20 transform translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-                <div class="relative z-10 flex justify-between items-start">
+        <!-- RELATÓRIO PDF DETALHADO -->
+        <div id="report-container" class="bg-white rounded-2xl border border-gray-200 overflow-hidden w-full mx-auto relative">
+            
+            <!-- Capa / Header do Relatório -->
+            <div class="bg-gray-900 text-white p-10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-brand-500 rounded-full mix-blend-multiply opacity-30 transform translate-x-1/3 -translate-y-1/3 blur-3xl"></div>
+                <div class="relative z-10 flex justify-between items-center">
                     <div>
-                        <p class="text-brand-400 font-semibold uppercase tracking-wider text-sm mb-1">Auditoria de SEO Local</p>
-                        <h2 id="pdf-nome" class="text-3xl font-bold mb-2">Nome Empresa</h2>
-                        <p class="text-gray-400 text-sm"><i class="ph ph-map-pin"></i> <span id="pdf-endereco">Endereço</span></p>
+                        <div class="flex items-center gap-2 mb-5">
+                            <div class="bg-brand-500 p-2 rounded-lg"><i class="ph ph-radar text-white text-xl"></i></div>
+                            <span class="text-xl font-bold tracking-tight">Mapamax<span class="font-light text-brand-400">Auditoria</span></span>
+                        </div>
+                        <p class="text-brand-400 font-bold uppercase tracking-widest text-xs mb-2">Diagnóstico de Presença Local</p>
+                        <h2 id="pdf-nome" class="text-4xl font-black mb-3">Nome Empresa</h2>
+                        <p class="text-gray-400 text-sm flex items-center gap-2"><i class="ph ph-map-pin"></i> <span id="pdf-endereco">Endereço</span></p>
                     </div>
-                    <div class="text-right">
-                        <div class="text-5xl font-black text-white" id="pdf-score">00<span class="text-xl text-gray-400 font-normal">/100</span></div>
-                        <p id="pdf-badge" class="font-bold mt-1 text-sm px-3 py-1 rounded-full inline-block">Atenção</p>
+                    <div class="text-right bg-white/10 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center min-w-[160px]">
+                        <p class="text-xs text-gray-300 font-bold uppercase tracking-wider mb-1">Score Local</p>
+                        <div class="text-6xl font-black text-white" id="pdf-score">00<span class="text-2xl text-gray-400 font-normal">/100</span></div>
+                        <p id="pdf-badge" class="font-bold mt-3 text-sm px-4 py-1.5 rounded-full inline-block">Atenção</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Corpo do Relatório -->
             <div class="p-10">
-                <p class="text-gray-600 leading-relaxed mb-8 text-lg">Avaliamos a presença da sua empresa no Google Maps. Atualmente, seu negócio está <strong>perdendo oportunidades de venda</strong> devido ao posicionamento comparado aos concorrentes.</p>
+                <!-- Introdução -->
+                <div class="border-l-4 border-brand-500 pl-6 mb-10">
+                    <p class="text-gray-700 leading-relaxed text-lg font-medium">
+                        Este relatório avalia como o algoritmo do Google enxerga o seu negócio hoje. Atualmente, a sua empresa está <strong class="text-red-600 bg-red-50 px-1">perdendo vendas diariamente</strong> devido à baixa autoridade no Google Maps quando comparada aos seus concorrentes diretos.
+                    </p>
+                </div>
                 
+                <!-- Métricas Atuais -->
+                <h3 class="text-xl font-bold text-gray-900 mb-5 flex items-center gap-2 border-b border-gray-100 pb-3">
+                    <i class="ph ph-chart-bar text-brand-500 text-2xl"></i> Suas Métricas Oficiais
+                </h3>
                 <div class="grid grid-cols-2 gap-6 mb-10">
-                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Nota Pública</div>
-                        <div class="text-4xl font-black text-gray-900 flex items-center gap-2">
-                            <span id="pdf-nota-real">0.0</span> <i class="ph ph-star-fill text-yellow-400 text-2xl"></i>
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-3">Nota Pública</div>
+                        <div class="text-5xl font-black text-gray-900 flex items-center gap-2">
+                            <span id="pdf-nota-real">0.0</span> <i class="ph ph-star-fill text-yellow-400 text-4xl drop-shadow-sm"></i>
+                        </div>
+                        <p id="pdf-analise-nota" class="text-sm text-red-600 mt-3 font-semibold bg-red-50 inline-block px-3 py-1 rounded-md">Abaixo da média recomendada</p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-3">Volume de Avaliações</div>
+                        <div class="text-5xl font-black text-gray-900 flex items-center gap-2">
+                            <span id="pdf-avaliacoes-real">0</span> <i class="ph ph-users text-brand-500 text-4xl drop-shadow-sm"></i>
+                        </div>
+                        <p id="pdf-analise-avals" class="text-sm text-red-600 mt-3 font-semibold bg-red-50 inline-block px-3 py-1 rounded-md">Insuficiente para gerar confiança</p>
+                    </div>
+                </div>
+
+                <!-- Diagnóstico de Dor -->
+                <h3 class="text-xl font-bold text-gray-900 mb-5 flex items-center gap-2 border-b border-gray-100 pb-3">
+                    <i class="ph ph-warning-circle text-orange-500 text-2xl"></i> O que isso causa no seu negócio?
+                </h3>
+                <div class="space-y-4 mb-10">
+                    <div class="flex gap-5 items-start bg-red-50 p-5 rounded-xl border border-red-100">
+                        <div class="bg-red-100 p-3 rounded-lg text-red-600"><i class="ph ph-eye-slash text-2xl"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-lg">Invisibilidade nas Buscas (Punição do Algoritmo)</h4>
+                            <p class="text-gray-600 mt-1 leading-relaxed">O Google prioriza empresas com fluxo constante de avaliações 5 estrelas. Sem um volume alto e recente, você não aparece nas 3 primeiras posições do mapa, ficando invisível para novos clientes.</p>
                         </div>
                     </div>
-                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Avaliações</div>
-                        <div class="text-4xl font-black text-gray-900 flex items-center gap-2">
-                            <span id="pdf-avaliacoes-real">0</span> <i class="ph ph-users text-brand-500 text-2xl"></i>
+                    <div class="flex gap-5 items-start bg-orange-50 p-5 rounded-xl border border-orange-100">
+                        <div class="bg-orange-100 p-3 rounded-lg text-orange-600"><i class="ph ph-trend-down text-2xl"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-lg">Fuga de Clientes para a Concorrência</h4>
+                            <p class="text-gray-600 mt-1 leading-relaxed">Quando um cliente pesquisa e vê o seu concorrente com 150 avaliações e você com muito menos, ele escolhe o concorrente por um simples gatilho de "prova social" e segurança.</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-brand-50 p-6 rounded-xl border border-brand-100 text-center">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">A Mapamax tem a Solução</h3>
-                    <p class="text-gray-700 text-sm mb-4">Multiplicamos suas avaliações 5 estrelas para colocar sua empresa no topo do Google.</p>
+                <!-- Solução Mapamax -->
+                <div class="bg-gradient-to-br from-brand-900 to-gray-900 p-10 rounded-2xl text-white text-center shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-400 to-blue-500"></div>
+                    <div class="relative z-10">
+                        <i class="ph ph-rocket-launch text-5xl text-brand-400 mb-4 drop-shadow-md"></i>
+                        <h3 class="text-3xl font-bold text-white mb-3">Temos a Solução Mapamax</h3>
+                        <p class="text-gray-300 text-base mb-8 max-w-2xl mx-auto leading-relaxed">
+                            Nós implementamos uma máquina automatizada para captar avaliações 5 estrelas dos seus clientes felizes todos os dias. Multiplicamos sua autoridade, blindamos sua reputação e colocamos sua empresa de volta no topo do Google.
+                        </p>
+                        <div class="inline-flex items-center gap-2 bg-brand-500 text-white font-bold py-3 px-8 rounded-xl border border-brand-400">
+                            <i class="ph ph-whatsapp-logo text-xl"></i> Fale conosco pelo WhatsApp
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8 text-gray-400 text-xs font-semibold uppercase tracking-widest">
+                    Auditoria Gerada Exclusivamente por Mapamax CRM
                 </div>
             </div>
         </div>
@@ -213,22 +267,48 @@
         async function prepararRelatorio(nome, endereco, nota, avaliacoes) {
             leadAtual = { nome, nota, avaliacoes };
 
-            // Cálculo do Score
+            // Cálculo rigoroso do Score para forçar a dor
             let score = 95;
-            if (nota < 4.5) score -= 20;
-            if (avaliacoes < 50) score -= 15;
-            if (avaliacoes < 20) score -= 20;
+            if (nota < 4.5) score -= 25;
+            if (avaliacoes < 50) score -= 20;
+            if (avaliacoes < 20) score -= 15;
             if (nota === 0) score = 30;
 
-            // Preenche PDF
+            // Preenche PDF - Dados Gerais
             document.getElementById('pdf-nome').innerText = nome;
             document.getElementById('pdf-endereco').innerText = endereco;
-            document.getElementById('pdf-score').innerHTML = `${score}<span class="text-xl text-gray-400 font-normal">/100</span>`;
+            document.getElementById('pdf-score').innerHTML = `${score}<span class="text-2xl text-gray-400 font-normal">/100</span>`;
             document.getElementById('pdf-nota-real').innerText = nota > 0 ? nota.toFixed(1) : '0.0';
             document.getElementById('pdf-avaliacoes-real').innerText = avaliacoes;
 
+            // Preenche PDF - Textos Dinâmicos de Análise
+            const analiseNota = document.getElementById('pdf-analise-nota');
+            if(nota === 0) { 
+                analiseNota.innerText = "Sem avaliações registradas."; 
+                analiseNota.className = "text-sm text-red-600 mt-3 font-semibold bg-red-50 inline-block px-3 py-1 rounded-md"; 
+            } else if(nota < 4.6) { 
+                analiseNota.innerText = "Abaixo da média de mercado (4.6+)"; 
+                analiseNota.className = "text-sm text-red-600 mt-3 font-semibold bg-red-50 inline-block px-3 py-1 rounded-md"; 
+            } else { 
+                analiseNota.innerText = "Boa nota, risco de queda por falta de volume."; 
+                analiseNota.className = "text-sm text-orange-600 mt-3 font-semibold bg-orange-50 inline-block px-3 py-1 rounded-md"; 
+            }
+
+            const analiseAvals = document.getElementById('pdf-analise-avals');
+            if(avaliacoes < 30) { 
+                analiseAvals.innerText = "Volume Crítico! Nenhuma autoridade no mapa."; 
+                analiseAvals.className = "text-sm text-red-600 mt-3 font-semibold bg-red-50 inline-block px-3 py-1 rounded-md"; 
+            } else if(avaliacoes < 100) { 
+                analiseAvals.innerText = "Volume Mediano. Atrás dos líderes locais."; 
+                analiseAvals.className = "text-sm text-orange-600 mt-3 font-semibold bg-orange-50 inline-block px-3 py-1 rounded-md"; 
+            } else { 
+                analiseAvals.innerText = "Bom volume. Manter fluxo para evitar queda."; 
+                analiseAvals.className = "text-sm text-green-600 mt-3 font-semibold bg-green-50 inline-block px-3 py-1 rounded-md"; 
+            }
+
+            // Badge Superior
             const badge = document.getElementById('pdf-badge');
-            badge.className = score < 60 ? "font-bold mt-1 text-sm px-3 py-1 rounded-full bg-red-500/20 text-red-400" : "font-bold mt-1 text-sm px-3 py-1 rounded-full bg-orange-500/20 text-orange-400";
+            badge.className = score < 60 ? "font-bold mt-3 text-sm px-4 py-1.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30" : "font-bold mt-3 text-sm px-4 py-1.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30";
             badge.innerText = score < 60 ? "Estado Crítico" : "Atenção Necessária";
 
             // Troca de tela
@@ -242,10 +322,57 @@
                     method: 'POST',
                     body: JSON.stringify({ nome, endereco, nota, avaliacoes })
                 });
-                console.log("Salvo na planilha!");
             } catch (e) {
                 console.error("Erro ao salvar", e);
             }
+        }
+
+        function voltarParaRadar() {
+            document.getElementById('view-pdf').classList.add('hidden');
+            document.getElementById('view-radar').classList.remove('hidden');
+        }
+
+        function baixarPDF() {
+            const element = document.getElementById('report-container');
+            const btn = document.getElementById('btn-baixar-pdf');
+            const btnOriginalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Gerando...';
+            
+            const opt = { 
+                margin: 0, 
+                filename: `Auditoria-${leadAtual.nome}.pdf`, 
+                image: { type: 'jpeg', quality: 0.98 }, 
+                html2canvas: { scale: 2, useCORS: true }, 
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = btnOriginalText;
+            });
+        }
+
+        function enviarWhatsApp() {
+            const num = prompt("Digite o WhatsApp da empresa (Apenas números com DDD):");
+            if (!num) return;
+            
+            const numLimpo = num.replace(/\D/g, '');
+            
+            // 1. Inicia o download do PDF automaticamente para o usuário não esquecer
+            baixarPDF();
+
+            // 2. Prepara o texto persuasivo de abordagem
+            const notaFormatada = leadAtual.nota > 0 ? leadAtual.nota.toFixed(1) : 'S/N';
+            const msg = `Olá! Tudo bem? 👋\n\nMeu nome é Edicarlos, sou da equipe da Mapamax. Estávamos fazendo um mapeamento das empresas de destaque na região e analisamos o perfil da *${leadAtual.nome}* no Google.\n\nNotei que vocês têm uma excelente estrutura, mas no Google estão com *apenas ${leadAtual.avaliacoes} avaliações* e nota *${notaFormatada}* ⭐️.\n\nInfelizmente, isso faz o algoritmo do Google esconder sua empresa, mandando seus clientes direto para a concorrência.\n\nGerei um *Relatório de Auditoria em PDF* (está logo abaixo) mostrando esse problema e como podemos lotar sua agenda.\n\nPosso te explicar como funciona?`;
+
+            // 3. Alerta instruindo o usuário sobre a limitação do WhatsApp Web
+            alert("✅ SUCESSO!\n\n1. O PDF está sendo baixado no seu computador.\n2. O WhatsApp Web vai abrir agora com o texto pronto.\n\n👉 INSTRUÇÃO: Assim que abrir o WhatsApp, apenas arraste o PDF baixado para dentro da conversa e aperte enviar!");
+
+            // 4. Abre o WhatsApp com o texto preenchido
+            setTimeout(() => {
+                window.open(`https://wa.me/55${numLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
+            }, 1000); // Aguarda 1 segundo para garantir que o download inicie
+        }
         }
 
         function voltarParaRadar() {
