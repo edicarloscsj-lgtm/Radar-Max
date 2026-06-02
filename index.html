@@ -21,8 +21,26 @@
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
+    <!-- TELA DE LOGIN (SENHA) -->
+    <main id="view-login" class="flex-grow flex items-center justify-center bg-gray-900 w-full px-4 absolute inset-0 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+            <div class="bg-brand-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph ph-lock-key text-3xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Acesso Restrito</h2>
+            <p class="text-sm text-gray-500 mb-6">Digite a senha para acessar o CRM</p>
+            
+            <input type="password" id="input-senha" placeholder="Senha de acesso" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-brand-500 focus:outline-none" onkeypress="if(event.key === 'Enter') verificarSenha()">
+            
+            <button onclick="verificarSenha()" class="w-full bg-brand-600 hover:bg-brand-700 text-white px-4 py-3 rounded-xl font-bold transition">
+                Entrar no Sistema
+            </button>
+            <p id="erro-senha" class="text-red-500 text-sm mt-3 hidden font-medium">Senha incorreta.</p>
+        </div>
+    </main>
+
     <!-- Navbar -->
-    <nav class="bg-gray-900 text-white shadow-lg border-b border-gray-800 sticky top-0 z-20">
+    <nav class="bg-gray-900 text-white shadow-lg border-b border-gray-800 sticky top-0 z-20 hidden" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-3">
             <div class="bg-gradient-to-br from-brand-500 to-brand-600 p-2 rounded-lg">
                 <i class="ph ph-radar text-2xl text-white"></i>
@@ -32,7 +50,7 @@
     </nav>
 
     <!-- TELA 1: BUSCA -->
-    <main id="view-radar" class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+    <main id="view-radar" class="flex-grow max-w-7xl mx-auto w-full px-4 py-8 hidden">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
             <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Máquina de Prospecção</h1>
             <p class="text-gray-500 mb-6 font-medium">Busque por Nicho + Cidade para encontrar empresas precisando de ajuda.</p>
@@ -193,6 +211,18 @@
         
         let leadAtual = null;
 
+        // SISTEMA DE SENHA
+        function verificarSenha() {
+            const senhaDigitada = document.getElementById('input-senha').value;
+            if (senhaDigitada === "ReaSBA@239") {
+                document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('navbar').classList.remove('hidden');
+                document.getElementById('view-radar').classList.remove('hidden');
+            } else {
+                document.getElementById('erro-senha').classList.remove('hidden');
+            }
+        }
+
         function handleEnter(e) { if (e.key === 'Enter') buscarLeads(); }
 
         async function buscarLeads() {
@@ -205,7 +235,6 @@
             document.getElementById('btn-search').disabled = true;
 
             try {
-                // AQUI GARANTIMOS O ?action=search PARA O GET FUNCIONAR
                 const response = await fetch(`${APPSCRIPT_URL}?action=search&query=${encodeURIComponent(query)}`);
                 const textResponse = await response.text();
                 
@@ -371,28 +400,7 @@
             // 4. Abre o WhatsApp com o texto preenchido
             setTimeout(() => {
                 window.open(`https://wa.me/55${numLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
-            }, 1000); // Aguarda 1 segundo para garantir que o download inicie
-        }
-        }
-
-        function voltarParaRadar() {
-            document.getElementById('view-pdf').classList.add('hidden');
-            document.getElementById('view-radar').classList.remove('hidden');
-        }
-
-        function baixarPDF() {
-            const element = document.getElementById('report-container');
-            const opt = { margin: 0, filename: `Auditoria-${leadAtual.nome}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save();
-        }
-
-        function enviarWhatsApp() {
-            const num = prompt("Digite o WhatsApp da empresa (Apenas números com DDD):");
-            if (num) {
-                const numLimpo = num.replace(/\D/g, '');
-                const msg = `Olá, somos da Mapamax! 👋\n\nFizemos uma auditoria na ${leadAtual.nome}.\n\nCom apenas ${leadAtual.avaliacoes} avaliações e nota ${leadAtual.nota} ⭐️, vocês estão perdendo clientes para a concorrência.\n\nGerei um relatório em PDF mostrando o problema. Posso te enviar?`;
-                window.open(`https://wa.me/55${numLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
-            }
+            }, 1000);
         }
     </script>
 </body>
